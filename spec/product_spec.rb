@@ -1,38 +1,45 @@
 require 'rails_helper'
 
-RSpec.describe Product, type: :model do
+RSpec.describe User, type: :model do
   describe 'Validations' do
     before(:each) do
-      @category = Category.create(name: "TestCategory")
-      @product = Product.new(name: "TestProduct", price: 100, quantity: 1, category: @category)
+      @user = User.new(email: "test@test.com", password: "password123", password_confirmation: "password123", first_name: "John", last_name: "Doe")
     end
 
-    it 'should save successfully with all four fields set' do
-      expect(@product.save).to be_truthy
+    it 'should save successfully with all fields set' do
+      expect(@user.save).to be_truthy
     end
 
-    it 'should not save without a name' do
-      @product.name = nil
-      expect(@product.save).to be_falsey
-      expect(@product.errors.full_messages).to include("Name can't be blank")
+    # Add other validation examples here
+
+  end
+
+  describe '.authenticate_with_credentials' do
+    before(:each) do
+      @user = User.create(email: "test@test.com", password: "password123", password_confirmation: "password123", first_name: "John", last_name: "Doe")
     end
 
-    it 'should not save without a price' do
-      @product.price_cents = nil
-      expect(@product.save).to be_falsey
-      expect(@product.errors.full_messages).to include("Price can't be blank")
+    it 'should authenticate successfully with valid credentials' do
+      authenticated_user = User.authenticate_with_credentials("test@test.com", "password123")
+      expect(authenticated_user).to eq(@user)
     end
 
-    it 'should not save without a quantity' do
-      @product.quantity = nil
-      expect(@product.save).to be_falsey
-      expect(@product.errors.full_messages).to include("Quantity can't be blank")
+    it 'should not authenticate with invalid credentials' do
+      authenticated_user = User.authenticate_with_credentials("test@test.com", "wrongpassword")
+      expect(authenticated_user).to be_nil
     end
 
-    it 'should not save without a category' do
-      @product.category = nil
-      expect(@product.save).to be_falsey
-      expect(@product.errors.full_messages).to include("Category can't be blank")
+    # Edge case: email with leading and trailing spaces
+    it 'should authenticate successfully with email containing spaces' do
+      authenticated_user = User.authenticate_with_credentials("  test@test.com  ", "password123")
+      expect(authenticated_user).to eq(@user)
     end
+
+    # Edge case: mixed-case email
+    it 'should authenticate successfully with mixed-case email' do
+      authenticated_user = User.authenticate_with_credentials("tEsT@tEsT.cOm", "password123")
+      expect(authenticated_user).to eq(@user)
+    end
+
   end
 end
